@@ -2,6 +2,7 @@ canvas {
 	width: 700px;
 	height: 700px;
 	margin: auto;
+	border: 2px black solid;
 }
 body{
 	margin: 0px;
