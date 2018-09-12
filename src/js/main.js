@@ -1,19 +1,19 @@
-const WIDTH = 800;
-const HEIGHT = 1200;
-const CARWIDTH = 100;
-const CARHEIGHT = 150;
+const WIDTH = 500;
+const HEIGHT = 700;
+const CARWIDTH = 60;
+const CARHEIGHT = 80;
 const DISTANCEFROMBOTTOM = 50;
 const A = 0;
 const B = WIDTH/4;
 const C = WIDTH/2;
 const D = 3*WIDTH/4;
-const SPRITEWIDTH = 100;
-const SPRITEHEIGHT = 100;
+const SPRITEWIDTH = 20;
+const SPRITEHEIGHT = 20;
 const MAXOBSTACLEDISTANCE = 2000;
 const MINOBSTACLEDISTANCE = 500;
 const XSPEED = 10;
-const YSPEED = 20;
-const SPRITESPAWNPROBABILITY = 0.02;
+const YSPEED = 9;
+const SPRITESPAWNPROBABILITY = 0.00;
 const SPRITETYPEPROBABILITY = 0.5;
 
 var dividers = [];
@@ -28,24 +28,27 @@ kontra.canvas.width = WIDTH;
 kontra.canvas.height = HEIGHT;
 
 function initLevel(){
+	let limage = new Image();
+	limage.src = 'src/assets/red.png';
+	let rimage = new Image();
+	rimage.src = 'src/assets/blue.png';
+
 	dividers.push(kontra.sprite({x:WIDTH/2,y:0,width:2,height:HEIGHT,color:'black',type:'divider'}));
 	dividers.push(kontra.sprite({x:WIDTH/4,y:0,width:2,height:HEIGHT,color:'black',type:'divider'}));
 	dividers.push(kontra.sprite({x:3*WIDTH/4,y:0,width:2,height:HEIGHT,color:'black',type:'divider'}));
 	left_sprite = kontra.sprite({
 		x:(WIDTH/4-CARWIDTH)/2,
 		y:HEIGHT-DISTANCEFROMBOTTOM-CARHEIGHT,
-		width:CARWIDTH,
-		height:CARHEIGHT,
-		color:'yellow',
-		dx:0
+		dx:0,
+		image: limage
 	});
 	right_sprite = kontra.sprite({
 		x:3*WIDTH/4 + (WIDTH/4-CARWIDTH)/2,
 		y:HEIGHT-DISTANCEFROMBOTTOM-CARHEIGHT,
 		width:CARWIDTH,
 		height:CARHEIGHT,
-		color:'orange',
-		dx:0
+		dx:0,
+		image: rimage
 	});
 	var rand = Math.random();
 	var dist;
@@ -130,20 +133,20 @@ function levelGen(){
 
 function updatePlayer(){
 	left_sprite.update();
-	if(left_sprite.x + SPRITEWIDTH > C - (WIDTH/4 - SPRITEWIDTH)/2){
+	if(left_sprite.x + CARWIDTH > C - (WIDTH/4 - CARWIDTH)/2){
 		left_sprite.dx = 0;
-		left_sprite.x = C - (WIDTH/4 - SPRITEWIDTH)/2 - SPRITEWIDTH;
-	} else if(left_sprite.x < A + (WIDTH/4 - SPRITEWIDTH)/2){
+		left_sprite.x = C - (WIDTH/4 - CARWIDTH)/2 - CARWIDTH;
+	} else if(left_sprite.x < A + (WIDTH/4 - CARWIDTH)/2){
 		left_sprite.dx = 0;
-		left_sprite.x = A + (WIDTH/4 - SPRITEWIDTH)/2;
+		left_sprite.x = A + (WIDTH/4 - CARWIDTH)/2;
 	}
 	right_sprite.update();
-	if(right_sprite.x + SPRITEWIDTH > WIDTH - (WIDTH/4 - SPRITEWIDTH)/2){
+	if(right_sprite.x + CARWIDTH > WIDTH - (WIDTH/4 - CARWIDTH)/2){
 		right_sprite.dx = 0;
-		right_sprite.x = WIDTH - (WIDTH/4 - SPRITEWIDTH)/2 - SPRITEWIDTH;
-	} else if(right_sprite.x < C + (WIDTH/4 - SPRITEWIDTH)/2){
+		right_sprite.x = WIDTH - (WIDTH/4 - CARWIDTH)/2 - CARWIDTH;
+	} else if(right_sprite.x < C + (WIDTH/4 - CARWIDTH)/2){
 		right_sprite.dx = 0;
-		right_sprite.x = C + (WIDTH/4 - SPRITEWIDTH)/2;
+		right_sprite.x = C + (WIDTH/4 - CARWIDTH)/2;
 	}
 }
 
@@ -170,7 +173,9 @@ function check(){
 }
 
 function gameOver(){
-	alert("game over score: "+score);
+	loop.stop();
+	kontra.context.fillStyle = 'rgba(0,0,0,0.9)'
+	kontra.context.fillRect(0,0,WIDTH,HEIGHT);
 }
 
 kontra.keys.bind('left',function(){
@@ -214,7 +219,6 @@ let loop = kontra.gameLoop({
 		}
 		for (i in del){
 			sprites.splice(del[i],1);
-			console.log("removed a sprite");
 		}
 
 		check();
@@ -225,12 +229,12 @@ let loop = kontra.gameLoop({
 			sprite.render();
 		}
 
-		renderPlayer();
-
 		for (i in sprites){
 			var sprite = sprites[i]
 			sprite.render();
 		}
+
+		renderPlayer();
 	}
 });
 
