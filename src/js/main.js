@@ -7,20 +7,39 @@ const A = 0;
 const B = WIDTH/4;
 const C = WIDTH/2;
 const D = 3*WIDTH/4;
-const SPRITEWIDTH = 20;
-const SPRITEHEIGHT = 20;
+const SPRITEWIDTH = 30;
+const SPRITEHEIGHT = 30;
 const MAXOBSTACLEDISTANCE = 2000;
 const MINOBSTACLEDISTANCE = 500;
 const XSPEED = 10;
 const YSPEED = 9;
-const SPRITESPAWNPROBABILITY = 0.00;
+const SPRITESPAWNPROBABILITY = 0.02;
 const SPRITETYPEPROBABILITY = 0.5;
+const ROTATERATE = 30;
+let limage = new Image();
+limage.src = 'src/assets/red.png';
+let rimage = new Image();
+rimage.src = 'src/assets/blue.png';
+let gold = new Image();
+gold.src = 'src/assets/gold.png';
+let silver = new Image();
+silver.src = 'src/assets/silver.png';
 
 var dividers = [];
 var sprites = [];
 var left_sprite;
 var right_sprite;
 var score = 0;
+var loop;
+var isGameOver = false;
+
+function restart(){
+	dividers = [];
+	sprites = [];
+	score = 0;
+	isGameOver = false;
+	initLevel();
+}
 
 kontra.init();
 
@@ -28,12 +47,7 @@ kontra.canvas.width = WIDTH;
 kontra.canvas.height = HEIGHT;
 
 function initLevel(){
-	let limage = new Image();
-	limage.src = 'src/assets/red.png';
-	let rimage = new Image();
-	rimage.src = 'src/assets/blue.png';
-
-	dividers.push(kontra.sprite({x:WIDTH/2,y:0,width:2,height:HEIGHT,color:'black',type:'divider'}));
+	dividers.push(kontra.sprite({x:WIDTH/2,y:0,width:3,height:HEIGHT,color:'black',type:'divider'}));
 	dividers.push(kontra.sprite({x:WIDTH/4,y:0,width:2,height:HEIGHT,color:'black',type:'divider'}));
 	dividers.push(kontra.sprite({x:3*WIDTH/4,y:0,width:2,height:HEIGHT,color:'black',type:'divider'}));
 	left_sprite = kontra.sprite({
@@ -62,6 +76,58 @@ function initLevel(){
 	else 
 		dist = D;
 	spawn(dist);
+loop = kontra.gameLoop({
+	update: function(){
+		if(!isGameOver){
+		levelGen();
+
+		updatePlayer();
+
+		var del = [];
+		for (i in sprites){
+			var sprite = sprites[i]
+			sprite.update();
+			if(sprite.y > HEIGHT){
+				if(sprite.type=='collectible'){
+					gameOver();
+				}
+				del.push(i);
+			}
+		}
+		for (i in del){
+			sprites.splice(del[i],1);
+		}
+
+		check();
+		}
+	},
+	render: function(){
+		if(isGameOver){
+	kontra.context.fillStyle = 'rgba(0,0,0,0.9)'
+	kontra.context.fillRect(0,0,WIDTH,HEIGHT);
+	kontra.context.fillStyle = 'rgb(255,255,255)'
+	kontra.context.font = '40px Arial';
+	kontra.context.fillText('Score: '+ score, 160,HEIGHT/2);
+	kontra.context.font = '20px Arial';
+	kontra.context.fillText('Press space to restart', 140,3*HEIGHT/4);
+
+		} else {
+		for (i in dividers){
+			var sprite = dividers[i]
+			sprite.render();
+		}
+
+		for (i in sprites){
+			var sprite = sprites[i]
+			sprite.render();
+		}
+
+		renderPlayer();
+		}
+	}
+});
+
+loop.start();
 }
 initLevel();
 
@@ -83,7 +149,8 @@ function getObstacle(a){
 		height: SPRITEHEIGHT,
 		dy: YSPEED,
 		color: 'blue',
-		type: 'obstacle'
+		type: 'obstacle',
+		image: silver,
 	});
 }
 
@@ -95,7 +162,8 @@ function getCollectible(a){
 		height: SPRITEHEIGHT,
 		dy: YSPEED,
 		color: 'red',
-		type: 'collectible'
+		type: 'collectible',
+		image: gold,
 	});
 }
 
@@ -174,8 +242,14 @@ function check(){
 
 function gameOver(){
 	loop.stop();
+	isGameOver= true;
 	kontra.context.fillStyle = 'rgba(0,0,0,0.9)'
 	kontra.context.fillRect(0,0,WIDTH,HEIGHT);
+	kontra.context.fillStyle = 'rgb(255,255,255)'
+	kontra.context.font = '40px Arial';
+	kontra.context.fillText('Score: '+ score, 160,HEIGHT/2);
+	kontra.context.font = '20px Arial';
+	kontra.context.fillText('Press space to restart', 140,3*HEIGHT/4);
 }
 
 kontra.keys.bind('left',function(){
@@ -189,6 +263,11 @@ kontra.keys.bind('left',function(){
 		left_sprite.dx = -left_sprite.dx;
 });
 
+kontra.keys.bind('space',function(){
+	loop.stop();
+	restart();
+});
+
 kontra.keys.bind('right',function(){
 	if(right_sprite.dx == 0){
 		if(right_sprite.x < D){
@@ -200,42 +279,4 @@ kontra.keys.bind('right',function(){
 		right_sprite.dx = -right_sprite.dx;
 });
 
-let loop = kontra.gameLoop({
-	update: function(){
-		levelGen();
 
-		updatePlayer();
-
-		var del = [];
-		for (i in sprites){
-			var sprite = sprites[i]
-			sprite.update();
-			if(sprite.y > HEIGHT){
-				if(sprite.type=='collectible'){
-					gameOver();
-				}
-				del.push(i);
-			}
-		}
-		for (i in del){
-			sprites.splice(del[i],1);
-		}
-
-		check();
-	},
-	render: function(){
-		for (i in dividers){
-			var sprite = dividers[i]
-			sprite.render();
-		}
-
-		for (i in sprites){
-			var sprite = sprites[i]
-			sprite.render();
-		}
-
-		renderPlayer();
-	}
-});
-
-loop.start();
